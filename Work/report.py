@@ -4,38 +4,17 @@
 
 import csv
 import sys
-from pprint import pprint
+from fileparse import parse_csv
 
 def portfolio_cost(filename):
-    cost = 0
-    portfolio = []
-
     with open(filename) as file:
-        data = csv.reader(file)
-        headers = next(data)
-            
-
-        for row in data:
-            new_row = (row[0], int(row[1]), float(row[2]))
-            record = dict(zip(headers, row))
-            print(record)
-            # portfolio.append({'name': row[0], 'shares': int(row[1]), 'price':float(row[2])})
-            portfolio.append(record)
-
+        portfolio = parse_csv(file, select=['name', 'shares', 'price'], types=[str, int, float])
     return portfolio
 
-
 def read_prices(filename):
-    prices = {}
     with open(filename) as file:
-        data = csv.reader(file)
-        for row in data:
-            if len(row) == 0:
-                continue
-            else:
-                prices[row[0]] = float(row[1])
-
-    return prices
+        prices = parse_csv(file, types=[str, float], has_headers=False)
+    return dict(prices)
 
 def make_report(portfolio, prices):
     report = []
@@ -46,12 +25,25 @@ def make_report(portfolio, prices):
         report.append(stock)
     return report
 
-prices = read_prices('work/Data/prices.csv')
-portfolio = portfolio_cost('work/Data/portfolio.csv')
+def print_report(report):
+    headers = ('Name', 'Shares', 'Price', 'Change')
+    print('%10s %10s %10s %10s' % headers)
+    print('---------- ---------- ---------- -----------')
+    for r in report:
+        print('%10s %10d %10.2f %10.2f' % r)
 
-report = make_report(portfolio, prices)
-headers = ('Name', 'Shares', 'Price', 'Change')
-print('%10s %10s %10s %10s' % headers)
-print('---------- ---------- ---------- -----------')
-for r in report:
-    print('%10s %10d %10.2f %10.2f' % r)
+def main():
+    if len(sys.argv) == 3:
+        price_filename = sys.argv[1]
+        portfolio_filename = sys.argv[2]
+    else:
+        price_filename = 'work/Data/prices.csv'
+        portfolio_filename = 'work/Data/portfolio.csv'
+    prices = read_prices(price_filename)
+    portfolio = portfolio_cost(portfolio_filename)
+    report = make_report(portfolio, prices)
+    print_report(report)
+
+if __name__ == '__main__':
+    main()
+

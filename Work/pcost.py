@@ -4,28 +4,26 @@
 
 import csv
 import sys
+from fileparse import parse_csv
 
 def portfolio_cost(filename):
     cost = 0
-    record = {}
     with open(filename) as file:
-        data = csv.reader(file)
-        headers = next(data)
-        for i, row in enumerate(data):
-            record = dict(zip(headers, row))
-            try:
-                shares = int(record['shares'])
-                price = float(record['price'])
-                cost += shares * price
-            except ValueError:
-                print(f'could not parse row {i}: {row}')
+        data = parse_csv(file,['shares', 'price'], [int, float], True)
+    for row in data:
+        cost += row['shares'] * row['price']
 
     return cost
 
-if len(sys.argv) == 2:
-    filename = sys.argv[1]
-else:
-    filename = 'work/Data/portfoliodate.csv'
+def main():
 
-cost = portfolio_cost(filename)
-print(f'Total cost {cost:.2f}')
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+    else:
+        filename = 'data/portfolio.csv'
+
+    cost = portfolio_cost(filename)
+    print(f'Total cost {cost:.2f}')
+
+if __name__ == '__main__':
+    main()
